@@ -1,34 +1,11 @@
-// 📦 Import dependencies
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
 const Groq = require("groq-sdk");
 
-// 🌐 Load environment variables
-dotenv.config();
-
-// 🚀 Initialize Express app
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// 🛡️ Middleware
-app.use(cors());
-app.use(express.json());
-
-// 📋 Log requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
-  next();
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
-// 🤖 Initialize Groq SDK
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-/**
- * @route POST /server/invoice-ai
- * @desc  Generate AI content based on a prompt
- */
-app.post("/server/invoice-ai", async (req, res) => {
+// POST /server/invoice-ai
+const generateInvoiceAI = async (req, res) => {
   const { prompt } = req.body;
 
   if (!prompt) {
@@ -42,19 +19,18 @@ app.post("/server/invoice-ai", async (req, res) => {
     });
 
     const reply = response.choices?.[0]?.message?.content;
-    console.log("✅ AI Reply:", reply);
+    console.log("Groq Reply:", reply);
     res.json({ reply });
   } catch (error) {
-    console.error("❌ Groq API Error:", error.message);
-    res.status(500).json({ error: "Groq API call failed", details: error.message });
+    console.error("Groq API Error:", error.message);
+    res
+      .status(500)
+      .json({ error: "Groq API call failed", details: error.message });
   }
-});
+};
 
-/**
- * @route POST /server/refine-invoice
- * @desc  Format raw invoice text into styled HTML
- */
-app.post("/server/refine-invoice", async (req, res) => {
+// POST /server/refine-invoice
+const refineInvoice = async (req, res) => {
   const { invoiceText } = req.body;
 
   if (!invoiceText) {
@@ -85,11 +61,10 @@ ${invoiceText}
     res.json({ html: htmlInvoice });
   } catch (error) {
     console.error("❌ Error refining invoice:", error.message);
-    res.status(500).json({ error: "Failed to refine invoice", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to refine invoice", details: error.message });
   }
-});
+};
 
-// 🟢 Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Groq proxy server running at http://localhost:${PORT}`);
-});
+module.exports = { generateInvoiceAI, refineInvoice };
