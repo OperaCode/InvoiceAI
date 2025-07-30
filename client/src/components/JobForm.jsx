@@ -4,6 +4,8 @@ import InvoicePreview from "./InvoicePreview";
 import InvoiceEditor from "./InvoiceEditor";
 import { toast } from "react-toastify";
 
+
+const BASE_URL = import.meta.env.VITE_URL
 const JobForm = () => {
   const [prompt, setPrompt] = useState("");
   const [invoice, setInvoice] = useState("");
@@ -21,7 +23,7 @@ const JobForm = () => {
     setShowPreview(false);
 
     try {
-      const res = await axios.post("http://localhost:3000/server/invoice-ai", {
+      const res = await axios.post(`${BASE_URL}/server/invoice-ai`, {
         prompt,
       });
       setInvoice(res.data.reply);
@@ -43,7 +45,7 @@ const JobForm = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/server/refine-invoice",
+        `${BASE_URL}/server/refine-invoice`,
         {
           invoiceText: editedInvoice,
         }

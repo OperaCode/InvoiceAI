@@ -17,27 +17,7 @@ const Home = () => {
     setShowPreview(false);
   };
 
-  const parsePrompt = async (prompt) => {
-    try {
-      const res = await fetch("http://localhost:3000/server/generate-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Unknown error");
-      }
-
-      const data = await res.json();
-      console.log("✅ Groq says:", data.reply);
-      return data.reply;
-    } catch (error) {
-      console.error("❌ Error talking to Groq API:", error.message);
-      return "Something went wrong.";
-    }
-  };
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-900 via-purple-900 to-blue-800 text-white px-6 py-12">
