@@ -103,29 +103,7 @@ const Home = () => {
         <JobForm />
       </div>
 
-      {/* Invoice Editor */}
-      {invoice && !showPreview && (
-        <div className="max-w-3xl mx-auto bg-white text-gray-900 p-6 rounded-xl shadow-lg transition-all duration-300">
-          <InvoiceEditor
-            invoice={invoice}
-            onChange={setInvoice}
-            onPreview={() => setShowPreview(true)}
-          />
-        </div>
-      )}
-
-      {/* Invoice Preview */}
-      {invoice && showPreview && (
-        <div className="max-w-3xl mx-auto mt-6 bg-white text-gray-900 p-6 rounded-xl shadow-lg transition-all duration-300">
-          <InvoicePreview invoice={invoice} />
-          <button
-            className="mt-6 w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl transition-all"
-            onClick={handleSend}
-          >
-            🚀 Send Invoice
-          </button>
-        </div>
-      )}
+      
     </div>
   );
 };

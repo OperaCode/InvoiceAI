@@ -10,7 +10,7 @@ export const parsePrompt = async (prompt) => {
           {
             role: "system",
             content:
-              "Extract invoice details from prompts into JSON. Format: {to, description, amount, currency, dueDate}",
+              "Extract invoice details from prompts into JSON. Format: {to, description, amount, currency, dueDate,email}",
           },
           {
             role: "user",
