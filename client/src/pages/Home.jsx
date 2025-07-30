@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import InvoicePreview from "../components/InvoicePreview";
 import { useAccount } from "wagmi";
+import axios from "axios";
 // import { ConnectButton } from "@rainbow-me/rainbowkit";
-import JobForm from "../components/JobForm";
 import InvoiceEditor from "../components/InvoiceEditor";
+import InvoicePreview from "../components/InvoicePreview";
 
 const BASE_URL = import.meta.env.VITE_URL;
 
 const Home = () => {
-  const [text, setText] = useState("");
+  // const [text, setText] = useState("");
   // const [invoice, setInvoice] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ const Home = () => {
       const res = await axios.post(`${BASE_URL}/server/refine-invoice`, {
         invoiceText: editedInvoice,
       });
-      setFinalInvoice(res.data.reply); // assuming backend sends refined invoice in `reply`
+      setFinalInvoice(res.data.reply); 
       setShowPreview(true);
     } catch (err) {
       console.error("Failed to refine invoice", err);
@@ -95,11 +95,8 @@ const Home = () => {
     }
   };
 
-
-
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-900 via-purple-900 to-blue-800 text-white px-6 py-12">
-      
       {/* Header */}
       <header className="text-center mb-12">
         <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow z-50">
@@ -130,12 +127,6 @@ const Home = () => {
         </p>
       </div>
 
-      {/* Connect Wallet */}
-      {/* <div className="mb-8 flex justify-center">
-        <div className="bg-white/10 backdrop-blur-lg rounded-lg px-6 py-4 border border-white/20 shadow-md">
-          <ConnectButton />
-        </div>
-      </div> */}
 
       <div className="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl shadow-lg p-6 text-white">
         <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 text-transparent bg-clip-text">
@@ -143,24 +134,26 @@ const Home = () => {
         </h2>
 
         {/* AI Prompt for new invoice */}
-        <textarea
-          className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
-          rows={5}
-          placeholder="Describe your job or task to generate an invoice. E.g., 'Create an invoice for Jane Doe for graphic design services, $500, due August 20'"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-        />
+        <div>
+          <textarea
+            className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
+            rows={5}
+            placeholder="Describe your job or task to generate an invoice. E.g., 'Create an invoice for Jane Doe for graphic design services, $500, due August 20'"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          />
 
-        {/* CTA-generate invoice */}
-        <button
-          onClick={handleGenerateInvoice}
-          disabled={loading}
-          className={`w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? "Generating Invoice..." : "Generate Invoice"}
-        </button>
+          {/* CTA-generate invoice */}
+          <button
+            onClick={handleGenerateInvoice}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "Generating Invoice..." : "Generate Invoice"}
+          </button>
+        </div>
 
         {/* Invoice Editor */}
         {invoice && (
@@ -187,12 +180,13 @@ const Home = () => {
           <div className="mt-6 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
             <InvoicePreview invoiceText={editedInvoice} />
 
+
             {/* CTA- SEND BY EMAIL */}
             <div className="mt-8 flex justify-end space-x-4">
               {/* Send as Email */}
               <button
                 onClick={() => handleSendEmail()}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                className="bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all text-white font-semibold py-2 px-4 rounded"
               >
                 Send via Email
               </button>

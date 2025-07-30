@@ -1,14 +1,10 @@
-
-import { Resend } from 'resend';
+import { Resend } from "resend";
 import { useRef } from "react";
 
-
 const InvoicePreview = ({ invoiceText }) => {
-  
-  
-  
   if (!invoiceText) return null;
-  console.log("🧾 invoiceText:", invoiceText);
+  
+  // console.log("🧾 invoiceText:", invoiceText);
 
   // Match lines like "**Label:** Value" or "* **Label:** Value"
   const regex = /\*{1,2}\s?\*{0,1}([A-Za-z #]+):\*\*?\s*(.+)/g;
@@ -21,8 +17,7 @@ const InvoicePreview = ({ invoiceText }) => {
     invoiceData[key] = value;
   }
 
-
-  // Extract client name from "Billing Information" if not directly available
+  // Extract client name from "Billing Information" 
   const extractClientName = () => {
     const billingInfo = invoiceData["Billing Information"];
     if (!billingInfo) return "N/A";
@@ -31,7 +26,10 @@ const InvoicePreview = ({ invoiceText }) => {
     return match ? match[1] : "N/A";
   };
 
-  console.log("🧾 Parsed invoice data:", invoiceData);
+
+
+  // debugging
+  // console.log("🧾 Parsed invoice data:", invoiceData);
 
   return (
     <div>
@@ -52,7 +50,11 @@ const InvoicePreview = ({ invoiceText }) => {
 
           <div className="flex justify-between">
             <span className="font-semibold">Client:</span>
-            <span>{invoiceData["Client Name"] || extractClientName()}</span>
+            <span>
+              {invoiceData["Client Name"] ||
+                invoiceData["Bill To"] ||
+                extractClientName()}
+            </span>
           </div>
 
           <div className="flex justify-between">
@@ -75,7 +77,6 @@ const InvoicePreview = ({ invoiceText }) => {
           Thank you for your business!
         </div>
       </div>
-       
     </div>
   );
 };
