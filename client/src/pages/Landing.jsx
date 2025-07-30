@@ -19,13 +19,13 @@ const testimonials = [
   {
     name: "Jane D.",
     role: "Freelance Designer",
-    quote: "QuickBill saved me hours every week. Invoices are ready in seconds, and my clients love the clean format.",
+    quote: "InvoiceAI saved me hours every week. Invoices are ready in seconds, and my clients love the clean format.",
     image: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
     name: "Mike A.",
     role: "Startup Founder",
-    quote: "We automated all our contractor invoices using QuickBill. It's fast, easy, and beautifully simple.",
+    quote: "We automated all our contractor invoices using InvoiceAI. It's fast, easy, and beautifully simple.",
     image: "https://randomuser.me/api/portraits/men/32.jpg",
   },
 ];
@@ -39,7 +39,7 @@ const Landing = () => {
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400">
-            QuickBill
+            InvoiceAI
           </h1>
           <div className="hidden md:flex space-x-8">
             <a href="#home" className="text-gray-700 hover:text-cyan-500 transition">Home</a>
@@ -72,7 +72,7 @@ const Landing = () => {
           </span>
         </h1>
         <p className="text-lg md:text-xl max-w-2xl mb-8 leading-relaxed text-white/90">
-          QuickBill empowers freelancers & startups with AI-generated, ready-to-send invoices — no signup, no hassle.
+          InvoiceAI empowers freelancers & startups with AI-generated, ready-to-send invoices — no signup, no hassle.
         </p>
         <a
           href="/home"
@@ -132,13 +132,13 @@ const Landing = () => {
           href="/app"
           className="inline-block bg-white text-indigo-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-indigo-50 hover:shadow-lg transition-transform transform hover:-translate-y-1"
         >
-          Try QuickBill Free
+          Try InvoiceAI Free
         </a>
       </section>
 
       {/* Footer */}
       <footer className="bg-gray-100 py-8 text-center text-sm text-gray-600">
-        <p>&copy; {new Date().getFullYear()} QuickBill — AI Invoicing, Reimagined.</p>
+        <p>&copy; {new Date().getFullYear()} InvoiceAI — AI Invoicing, Reimagined.</p>
         <div className="mt-4 space-x-4">
           <a href="#privacy" className="hover:text-indigo-600 transition">Privacy Policy</a>
           <a href="#terms" className="hover:text-indigo-600 transition">Terms</a>
