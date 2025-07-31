@@ -1,30 +1,27 @@
 import React, { useState } from "react";
-import { useAccount } from "wagmi";
+import { toast } from "react-toastify";
 import axios from "axios";
-// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import InvoiceEditor from "../components/InvoiceEditor";
 import InvoicePreview from "../components/InvoicePreview";
 
 const BASE_URL = import.meta.env.VITE_URL;
 
 const Home = () => {
-  // const [text, setText] = useState("");
-  // const [invoice, setInvoice] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [working, setWorking] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const [prompt, setPrompt] = useState("");
   const [invoice, setInvoice] = useState("");
   const [editedInvoice, setEditedInvoice] = useState("");
-  // const [loading, setLoading] = useState(false);
-  const [working, setWorking] = useState(false);
-  // const [showPreview, setShowPreview] = useState(false);
   const [finalInvoice, setFinalInvoice] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState(""); // ✅ Fixed
 
-  // CTA Function for AI prompt
+  // Generate invoice from prompt
   const handleGenerateInvoice = async () => {
-    if (!prompt.trim())
-      return toast.error("Prompt is required, Enter a prompt !!!");
+    if (!prompt.trim()) return toast.error("Prompt is required!");
+
     setLoading(true);
     setShowPreview(false);
 
@@ -36,15 +33,17 @@ const Home = () => {
       setEditedInvoice(res.data.reply);
     } catch (err) {
       console.error("Failed to generate invoice", err);
+      toast.error("Error generating invoice.");
     } finally {
       setLoading(false);
     }
   };
 
-  // CTA for refine invoice
+  // Refine invoice
   const handleRefineInvoice = async () => {
     if (!editedInvoice.trim())
       return toast.error("Please edit the invoice first.");
+
     setWorking(true);
     setShowPreview(false);
 
@@ -52,7 +51,7 @@ const Home = () => {
       const res = await axios.post(`${BASE_URL}/server/refine-invoice`, {
         invoiceText: editedInvoice,
       });
-      setFinalInvoice(res.data.reply); 
+      setFinalInvoice(res.data.html);
       setShowPreview(true);
     } catch (err) {
       console.error("Failed to refine invoice", err);
@@ -62,36 +61,26 @@ const Home = () => {
     }
   };
 
-  // CTA handle send email
+  // Send invoice email
   const handleSendEmail = async () => {
     if (!finalInvoice) return toast.error("No invoice to send.");
+    if (!recipientEmail.includes("@"))
+      return toast.error("Please enter a valid recipient email.");
+
+    setSending(true);
 
     try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "you@yourdomain.com",
-          to: "client@example.com",
-          subject: "📄 Your Invoice",
-          html: finalInvoice,
-        }),
+      await axios.post(`${BASE_URL}/server/send-invoice`, {
+        to: recipientEmail, // ✅ Uses dynamic email
+        html: finalInvoice,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(data);
-        return toast.error("Failed to send email.");
-      }
 
       toast.success("📧 Invoice sent successfully!");
     } catch (error) {
-      console.error("Resend error:", error);
+      console.error("Email error:", error);
       toast.error("Error sending invoice.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -107,7 +96,7 @@ const Home = () => {
             <div className="hidden md:flex space-x-8">
               <a
                 href="/"
-                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition"
+                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition cursor-pointer font-bold"
               >
                 Exit App
               </a>
@@ -116,44 +105,40 @@ const Home = () => {
         </nav>
       </header>
 
-      {/* Hero Header*/}
+      {/* Hero Header */}
       <div className="m-auto text-center py-6">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-tight bg-gradient-to-r from-cyan-300 via-white to-purple-300 text-transparent bg-clip-text">
           InvoiceAI - AI Invoice Generator
         </h1>
         <p className="text-lg text-white/80 max-w-xl mx-auto">
-          Automate your invoicing with AI. Fill in job details, preview, and
-          send in seconds.
+          Automate your invoicing with AI. Write your prompt, preview, and send
+          in seconds.
         </p>
       </div>
-
 
       <div className="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl shadow-lg p-6 text-white">
         <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 text-transparent bg-clip-text">
           🧠 AI-Powered Invoice Generator
         </h2>
 
-        {/* AI Prompt for new invoice */}
-        <div>
-          <textarea
-            className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
-            rows={5}
-            placeholder="Describe your job or task to generate an invoice. E.g., 'Create an invoice for Jane Doe for graphic design services, $500, due August 20'"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
+        {/* AI Prompt */}
+        <textarea
+          className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
+          rows={5}
+          placeholder="Describe your job or task to generate an invoice."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+        />
 
-          {/* CTA-generate invoice */}
-          <button
-            onClick={handleGenerateInvoice}
-            disabled={loading}
-            className={`w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {loading ? "Generating Invoice..." : "Generate Invoice"}
-          </button>
-        </div>
+        <button
+          onClick={handleGenerateInvoice}
+          disabled={loading}
+          className={`w-full py-3 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          {loading ? "Generating Invoice..." : "Generate Invoice"}
+        </button>
 
         {/* Invoice Editor */}
         {invoice && (
@@ -162,8 +147,6 @@ const Home = () => {
               invoice={editedInvoice}
               onChange={setEditedInvoice}
             />
-
-            {/* CTA - refine invoice */}
             <div className="mt-4 flex justify-end">
               <button
                 onClick={handleRefineInvoice}
@@ -175,20 +158,30 @@ const Home = () => {
           </div>
         )}
 
-        {/* Invoice Preview */}
+        {/* Invoice Preview and Send Email */}
         {showPreview && (
           <div className="mt-6 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
             <InvoicePreview invoiceText={editedInvoice} />
-
-
-            {/* CTA- SEND BY EMAIL */}
-            <div className="mt-8 flex justify-end space-x-4">
-              {/* Send as Email */}
-              <button
-                onClick={() => handleSendEmail()}
-                className="bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all text-white font-semibold py-2 px-4 rounded"
+            <div className="mt-8 space-y-2">
+              <label
+                htmlFor="clientEmail"
+                className="block text-sm font-medium "
               >
-                Send via Email
+                Enter Client Email
+              </label>
+              <input
+                type="email"
+                name="clientEmail"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-md bg-white/20  placeholder-white/60 border border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                placeholder="client@example.com"
+              />
+              <button
+                onClick={handleSendEmail}
+                className="mt-2 w-full py-2 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all text-white"
+              >
+                {sending ? "Sending Invoice" : "Send via Email"}
               </button>
             </div>
           </div>

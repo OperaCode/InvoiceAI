@@ -30,7 +30,7 @@ export const parsePrompt = async (prompt) => {
     const message = res?.data?.choices?.[0]?.message?.content;
     return JSON.parse(message);
   } catch (error) {
-    console.error("❌ OpenAI API Error:", error.response?.status, error.response?.data || error.message);
+    console.error("OpenAI API Error:", error.response?.status, error.response?.data || error.message);
 
     if (error.response?.status === 429) {
       alert("⚠️ Rate limit exceeded. Please wait and try again.");
