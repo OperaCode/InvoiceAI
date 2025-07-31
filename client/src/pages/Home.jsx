@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { marked } from "marked";
 import InvoiceEditor from "../components/InvoiceEditor";
 import InvoicePreview from "../components/InvoicePreview";
+import { sendInvoiceEmail } from "../util/email";
 
 const BASE_URL = import.meta.env.VITE_URL;
 
@@ -11,12 +13,20 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [working, setWorking] = useState(false);
   const [sending, setSending] = useState(false);
+const [jobData, setJobData] = useState({
+  clientName: "",
+  clientEmail: "",
+  jobDescription: "",
+  estimatedHours: "",
+  ratePerHour: "",
+  dueDate: "",
+});
 
   const [prompt, setPrompt] = useState("");
   const [invoice, setInvoice] = useState("");
   const [editedInvoice, setEditedInvoice] = useState("");
   const [finalInvoice, setFinalInvoice] = useState("");
-  const [recipientEmail, setRecipientEmail] = useState(""); // ✅ Fixed
+  const [recipientEmail, setRecipientEmail] = useState("");
 
   // Generate invoice from prompt
   const handleGenerateInvoice = async () => {
@@ -29,8 +39,9 @@ const Home = () => {
       const res = await axios.post(`${BASE_URL}/server/invoice-ai`, {
         prompt,
       });
-      setInvoice(res.data.reply);
-      setEditedInvoice(res.data.reply);
+      setInvoice(res.data.message);
+      setEditedInvoice(res.data.message);
+      setFinalInvoice(res.data.message);
     } catch (err) {
       console.error("Failed to generate invoice", err);
       toast.error("Error generating invoice.");
@@ -51,6 +62,7 @@ const Home = () => {
       const res = await axios.post(`${BASE_URL}/server/refine-invoice`, {
         invoiceText: editedInvoice,
       });
+      console.log(res)
       setFinalInvoice(res.data.html);
       setShowPreview(true);
     } catch (err) {
@@ -61,32 +73,45 @@ const Home = () => {
     }
   };
 
-  // Send invoice email
-  const handleSendEmail = async () => {
-    if (!finalInvoice) return toast.error("No invoice to send.");
-    if (!recipientEmail.includes("@"))
-      return toast.error("Please enter a valid recipient email.");
-
-    setSending(true);
-
-    try {
-      await axios.post(`${BASE_URL}/server/send-invoice`, {
-        to: recipientEmail, // ✅ Uses dynamic email
-        html: finalInvoice,
-      });
-
-      toast.success("📧 Invoice sent successfully!");
-    } catch (error) {
-      console.error("Email error:", error);
-      toast.error("Error sending invoice.");
-    } finally {
-      setSending(false);
+  // Send invoice email using EmailJS
+ const handleSendEmail = async () => {
+  try {
+    // Ensure required fields are filled
+    if (!jobData.clientEmail || !jobData.clientName) {
+      toast.error("Please enter client name and email.");
+      return;
     }
-  };
+
+    const hoursWorked = parseFloat(jobData.estimatedHours);
+    const ratePerHour = parseFloat(jobData.ratePerHour);
+    const subtotal = hoursWorked * ratePerHour;
+    const tax = subtotal * 0.075; // 7.5% tax
+    const total = subtotal + tax;
+
+    await sendInvoiceEmail({
+      to_email: jobData.clientEmail,
+      to_name: jobData.clientName,
+      invoice_id: `INV-${Date.now().toString().slice(-6)}`,
+      invoice_date: new Date().toLocaleDateString(),
+      due_date: jobData.dueDate || "N/A",
+      job_description: jobData.jobDescription || "N/A",
+      rate_per_hour: ratePerHour.toFixed(2),
+      hours_worked: hoursWorked.toFixed(1),
+      job_total: total.toFixed(2),
+      subtotal: subtotal.toFixed(2),
+      tax: tax.toFixed(2),
+    });
+
+    toast.success("Invoice email sent successfully!");
+  } catch (error) {
+    toast.error("Failed to send invoice email.");
+    console.error("Send invoice error:", error);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-900 via-purple-900 to-blue-800 text-white px-6 py-12">
-      {/* Header */}
       <header className="text-center mb-12">
         <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -105,7 +130,6 @@ const Home = () => {
         </nav>
       </header>
 
-      {/* Hero Header */}
       <div className="m-auto text-center py-6">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-tight bg-gradient-to-r from-cyan-300 via-white to-purple-300 text-transparent bg-clip-text">
           InvoiceAI - AI Invoice Generator
@@ -121,7 +145,6 @@ const Home = () => {
           🧠 AI-Powered Invoice Generator
         </h2>
 
-        {/* AI Prompt */}
         <textarea
           className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
           rows={5}
@@ -140,7 +163,6 @@ const Home = () => {
           {loading ? "Generating Invoice..." : "Generate Invoice"}
         </button>
 
-        {/* Invoice Editor */}
         {invoice && (
           <div className="mt-8 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
             <InvoiceEditor
@@ -158,14 +180,16 @@ const Home = () => {
           </div>
         )}
 
-        {/* Invoice Preview and Send Email */}
         {showPreview && (
           <div className="mt-6 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
             <InvoicePreview invoiceText={editedInvoice} />
+
+
+
             <div className="mt-8 space-y-2">
               <label
                 htmlFor="clientEmail"
-                className="block text-sm font-medium "
+                className="block text-sm font-medium"
               >
                 Enter Client Email
               </label>
@@ -174,14 +198,14 @@ const Home = () => {
                 name="clientEmail"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-md bg-white/20  placeholder-white/60 border border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                className="w-full px-3 py-2 rounded-md bg-white/20 placeholder-white/60 border border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400"
                 placeholder="client@example.com"
               />
               <button
                 onClick={handleSendEmail}
-                className="mt-2 w-full py-2 rounded-xl font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-600 hover:to-indigo-700 transition-all text-white"
+                className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
               >
-                {sending ? "Sending Invoice" : "Send via Email"}
+                {sending ? "Sending..." : "Send Email"}
               </button>
             </div>
           </div>
