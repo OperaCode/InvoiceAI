@@ -24,37 +24,34 @@ const InvoicePreview = ({ invoiceText }) => {
 
   // Extract client name from "Billing Information" 
   const extractClientName = () => {
-    const billingInfo = invoiceData["Billing Information"];
+    const billingInfo = invoiceData["Billing Information"] || invoiceData["Bill To"];
     if (!billingInfo) return "N/A";
 
-    const match = billingInfo.match(/\*\*Client Name:\*\* (.+)/);
+    const match = billingInfo.match(/\*\*Bill To:\*\* (.+)/);
     return match ? match[1] : "N/A";
   };
 
 
 
- const handleSendEmail = async () => {
-  // Validate finalInvoice exists
-  if (!invoiceData ) {
+  const extractServices = () => {
+    const serviceInfo = invoiceData["Service Details"] || invoiceData["Bill To"];
+    if (!serviceInfo) return "N/A";
+
+    const match = serviceInfo.match(/\*\*Service Description:\*\* (.+)/);
+    return match ? match[1] : "N/A";
+  };
+
+// const extractClientName = () => {
+//   return invoiceData["Billing Information"]?.split("\n")[0] || "N/A";
+// };
+
+  
+
+const handleSendEmail = async () => {
+  if (!invoiceData) {
     return toast.error("No invoice to send.");
   }
 
-  console.log(invoiceData)
-
-  // const {
-  //   html,
-  //   invoiceNumber,
-  //   dateIssued,
-  //   dueDate,
-  //   jobDescription,
-  //   ratePerHour,
-  //   hoursWorked,
-  //   subtotal,
-  //   tax,
-  //   totalAmount,
-  // } = finalInvoice;
-
-  // Validate recipient email
   if (!recipientEmail || !recipientEmail.includes("@")) {
     return toast.error("Please enter a valid recipient email.");
   }
@@ -63,21 +60,24 @@ const InvoicePreview = ({ invoiceText }) => {
     console.log("Sending to:", recipientEmail);
 
     await sendInvoiceEmail({
-      to_name: invoiceData?.clientName || "Bill To",
+      to_name: invoiceData["Billing Information"] || "Client",
       to_email: recipientEmail.trim(),
-      invoice_id: invoiceNumber || "N/A",
-      invoice_date: dateIssued || "N/A",
-      due_date: dueDate || "N/A",
-      job_description: Description || "N/A",
-      rate_per_hour: ratePerHour || "0",
-      hours_worked: hoursWorked || "0",
-      job_total: (subtotal || 0) + (tax || 0),
-      subtotal: subtotal || 0,
-      tax: tax || 0,
-      total_due: totalAmount || 0,
+      invoice_id: invoiceData["Invoice Number"] || "N/A",
+      invoice_date: invoiceData["Date"] || "N/A",
+      due_date: "August 15, 2024", // Hardcoded from invoiceText or parse dynamically
+      job_description: invoiceData["Description of Services"] || "N/A",
+      rate_per_hour: invoiceData["Unit Price"] || "0",
+      hours_worked: invoiceData["Quantity"] || "1",
+      job_total:
+        parseFloat(invoiceData["Total"]?.replace("$", "")) || 0,
+      subtotal:
+        parseFloat(invoiceData["Subtotal"]?.replace("$", "")) || 0,
+      tax: parseFloat(invoiceData["Tax (0%)"]?.replace("$", "")) || 0,
+      total_due:
+        parseFloat(invoiceData["Total Due"]?.replace("$", "")) || 0,
     });
 
-    toast.success("📧 Invoice sent via EmailJS!");
+    toast.success("📧 Invoice sent via Email!");
   } catch (err) {
     console.error("Send invoice error:", err);
     toast.error("❌ Failed to send invoice.");
@@ -85,10 +85,6 @@ const InvoicePreview = ({ invoiceText }) => {
 };
 
 
-
-  // debugging
-  
-  
   
   console.log("🧾 Parsed invoice data:", invoiceData);
 
@@ -112,7 +108,7 @@ const InvoicePreview = ({ invoiceText }) => {
           <div className="flex justify-between">
             <span className="font-semibold">Client:</span>
             <span>
-              {invoiceData["Client Name"] ||
+              {invoiceData["Bill To"] ||
                 invoiceData["Bill To"] ||
                 extractClientName()}
             </span>
@@ -120,7 +116,12 @@ const InvoicePreview = ({ invoiceText }) => {
 
           <div className="flex justify-between">
             <span className="font-semibold">Service:</span>
-            <span>{invoiceData["Service"] || "N/A"}</span>
+            <span>
+              {/* {invoiceData["Service Details"] || "N/A"} */}
+              {invoiceData["Services Provided"] ||
+                invoiceData["Bill To"] ||
+                extractServices()}
+              </span>
           </div>
 
           <div className="flex justify-between">

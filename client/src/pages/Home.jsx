@@ -13,14 +13,14 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [working, setWorking] = useState(false);
   const [sending, setSending] = useState(false);
-const [jobData, setJobData] = useState({
-  clientName: "",
-  clientEmail: "",
-  jobDescription: "",
-  estimatedHours: "",
-  ratePerHour: "",
-  dueDate: "",
-});
+  const [jobData, setJobData] = useState({
+    clientName: "",
+    clientEmail: "",
+    jobDescription: "",
+    estimatedHours: "",
+    ratePerHour: "",
+    dueDate: "",
+  });
 
   const [prompt, setPrompt] = useState("");
   const [invoice, setInvoice] = useState("");
@@ -62,7 +62,7 @@ const [jobData, setJobData] = useState({
       const res = await axios.post(`${BASE_URL}/server/refine-invoice`, {
         invoiceText: editedInvoice,
       });
-      console.log(res)
+      console.log(res);
       setFinalInvoice(res.data.html);
       setShowPreview(true);
     } catch (err) {
@@ -74,41 +74,40 @@ const [jobData, setJobData] = useState({
   };
 
   // Send invoice email using EmailJS
- const handleSendEmail = async () => {
-  try {
-    // Ensure required fields are filled
-    if (!jobData.clientEmail || !jobData.clientName) {
-      toast.error("Please enter client name and email.");
-      return;
+  const handleSendEmail = async () => {
+    try {
+      // Ensure required fields are filled
+      if (!jobData.clientEmail || !jobData.clientName) {
+        toast.error("Please enter client name and email.");
+        return;
+      }
+
+      const hoursWorked = parseFloat(jobData.estimatedHours);
+      const ratePerHour = parseFloat(jobData.ratePerHour);
+      const subtotal = hoursWorked * ratePerHour;
+      const tax = subtotal * 0.075; // 7.5% tax
+      const total = subtotal + tax;
+
+      await sendInvoiceEmail({
+        to_email: jobData.clientEmail,
+        to_name: jobData.clientName,
+        invoice_id: `INV-${Date.now().toString().slice(-6)}`,
+        invoice_date: new Date().toLocaleDateString(),
+        due_date: jobData.dueDate || "N/A",
+        job_description: jobData.jobDescription || "N/A",
+        rate_per_hour: ratePerHour.toFixed(2),
+        hours_worked: hoursWorked.toFixed(1),
+        job_total: total.toFixed(2),
+        subtotal: subtotal.toFixed(2),
+        tax: tax.toFixed(2),
+      });
+
+      toast.success("Invoice email sent successfully!");
+    } catch (error) {
+      toast.error("Failed to send invoice email.");
+      console.error("Send invoice error:", error);
     }
-
-    const hoursWorked = parseFloat(jobData.estimatedHours);
-    const ratePerHour = parseFloat(jobData.ratePerHour);
-    const subtotal = hoursWorked * ratePerHour;
-    const tax = subtotal * 0.075; // 7.5% tax
-    const total = subtotal + tax;
-
-    await sendInvoiceEmail({
-      to_email: jobData.clientEmail,
-      to_name: jobData.clientName,
-      invoice_id: `INV-${Date.now().toString().slice(-6)}`,
-      invoice_date: new Date().toLocaleDateString(),
-      due_date: jobData.dueDate || "N/A",
-      job_description: jobData.jobDescription || "N/A",
-      rate_per_hour: ratePerHour.toFixed(2),
-      hours_worked: hoursWorked.toFixed(1),
-      job_total: total.toFixed(2),
-      subtotal: subtotal.toFixed(2),
-      tax: tax.toFixed(2),
-    });
-
-    toast.success("Invoice email sent successfully!");
-  } catch (error) {
-    toast.error("Failed to send invoice email.");
-    console.error("Send invoice error:", error);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-indigo-900 via-purple-900 to-blue-800 text-white px-6 py-12">
@@ -153,6 +152,7 @@ const [jobData, setJobData] = useState({
           onChange={(e) => setPrompt(e.target.value)}
         />
 
+        {/* CTA- generate invoice */}
         <button
           onClick={handleGenerateInvoice}
           disabled={loading}
@@ -165,10 +165,13 @@ const [jobData, setJobData] = useState({
 
         {invoice && (
           <div className="mt-8 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
+            {/* invoice editor */}
             <InvoiceEditor
               invoice={editedInvoice}
               onChange={setEditedInvoice}
             />
+
+            {/* CTA-refine invoice  */}
             <div className="mt-4 flex justify-end">
               <button
                 onClick={handleRefineInvoice}
@@ -184,8 +187,7 @@ const [jobData, setJobData] = useState({
           <div className="mt-6 bg-white text-gray-900 p-4 rounded-xl shadow-lg">
             <InvoicePreview invoiceText={editedInvoice} />
 
-
-
+            {/* CTA-send as Email */}
             {/* <div className="mt-8 space-y-2">
               <label
                 htmlFor="clientEmail"
