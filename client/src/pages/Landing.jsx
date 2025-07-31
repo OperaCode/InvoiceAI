@@ -283,6 +283,6 @@ const Landing = () => {
 
 export default Landing;
 
-// QUICK PROMPTS
+// SAMPLE PROMPTS
 // Generate a professional invoice template with placeholders for client name, service description, date, hours, rate, and total.
 // Generate an invoice for Jane Doe for website design worth $800, due August 15.
