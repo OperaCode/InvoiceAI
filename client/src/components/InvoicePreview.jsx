@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { sendInvoiceEmail } from "../util/email";
@@ -24,13 +23,16 @@ const InvoicePreview = ({ invoiceText }) => {
   // Extract client name from "Billing Information"
   const extractClientName = () => {
     const billingInfo =
-      invoiceData["Billing Information"] || invoiceData["Bill To"] || invoiceData["Client Name"];
+      invoiceData["Billing Information"] ||
+      invoiceData["Bill To"] ||
+      invoiceData["Client Name"];
     if (!billingInfo) return "N/A";
 
     const match = billingInfo.match(/\*\*Bill To:\*\* (.+)/);
     return match ? match[1] : "N/A";
   };
 
+  // Extract service description
   const extractServices = () => {
     const serviceInfo =
       invoiceData["Service Details"] || invoiceData["Bill To"];
@@ -39,11 +41,6 @@ const InvoicePreview = ({ invoiceText }) => {
     const match = serviceInfo.match(/\*\*Service Description:\*\* (.+)/);
     return match ? match[1] : "N/A";
   };
-
-  // debug option
-  // const extractClientName = () => {
-  //   return invoiceData["Billing Information"]?.split("\n")[0] || "N/A";
-  // };
 
   // handle send email
   const handleSendEmail = async () => {
@@ -81,7 +78,7 @@ const InvoicePreview = ({ invoiceText }) => {
     }
   };
 
-  console.log("Parsed invoice data:", invoiceData);
+  // console.log("Parsed invoice data:", invoiceData);
 
   return (
     <div>
@@ -112,7 +109,6 @@ const InvoicePreview = ({ invoiceText }) => {
           <div className="flex justify-between">
             <span className="font-semibold">Service:</span>
             <span>
-              {/* {invoiceData["Service Details"] || "N/A"} */}
               {invoiceData["Services Provided"] ||
                 invoiceData["Bill To"] ||
                 extractServices()}
@@ -121,7 +117,9 @@ const InvoicePreview = ({ invoiceText }) => {
 
           <div className="flex justify-between">
             <span className="font-semibold">Amount:</span>
-            <span>{invoiceData["Total"] || invoiceData["Total Due"] ||  "N/A"}</span>
+            <span>
+              {invoiceData["Total"] || invoiceData["Total Due"] || "N/A"}
+            </span>
           </div>
 
           <div className="flex justify-between">
