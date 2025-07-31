@@ -4,7 +4,7 @@ import { useRef } from "react";
 const InvoicePreview = ({ invoiceText }) => {
   if (!invoiceText) return null;
   
-  // console.log("🧾 invoiceText:", invoiceText);
+  console.log("🧾 invoiceText:", invoiceText);
 
   // Match lines like "**Label:** Value" or "* **Label:** Value"
   const regex = /\*{1,2}\s?\*{0,1}([A-Za-z #]+):\*\*?\s*(.+)/g;
@@ -29,7 +29,7 @@ const InvoicePreview = ({ invoiceText }) => {
 
 
   // debugging
-  // console.log("🧾 Parsed invoice data:", invoiceData);
+  console.log("🧾 Parsed invoice data:", invoiceData);
 
   return (
     <div>
