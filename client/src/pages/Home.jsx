@@ -186,7 +186,7 @@ const [jobData, setJobData] = useState({
 
 
 
-            <div className="mt-8 space-y-2">
+            {/* <div className="mt-8 space-y-2">
               <label
                 htmlFor="clientEmail"
                 className="block text-sm font-medium"
@@ -207,7 +207,7 @@ const [jobData, setJobData] = useState({
               >
                 {sending ? "Sending..." : "Send Email"}
               </button>
-            </div>
+            </div> */}
           </div>
         )}
       </div>

@@ -25,7 +25,7 @@ const generateInvoiceAI = async (req, res) => {
     const reply = response.choices?.[0]?.message?.content;
     
     // Debug
-    // console.log("Groq Reply:", reply);
+    console.log("Groq Reply:", reply);
 
 
     res.status(200).json({ message: reply });
@@ -66,7 +66,8 @@ ${invoiceText}
     });
 
     const htmlInvoice = response.choices?.[0]?.message?.content;
-    res.status(200).json({success: true, message: "Invoice Refined!"});
+    res.status(200).json({ success: true, html: htmlInvoice });
+
   } catch (error) {
     console.error("❌ Error refining invoice:", error.message);
     res
@@ -76,41 +77,42 @@ ${invoiceText}
 };
 
 // send final invoice by email 
-const sendInvoiceEmail = async (req, res) => {
-  const { to, html } = req.body;
-console.log(req.body)
-  if (!to || !html) {
-    return res.status(400).json({ error: "Recipient and HTML required" });
-  }
+// const sendInvoiceEmail = async (req, res) => {
+//   const { to, html } = req.body;
+//   console.log(html)
+// console.log(req.body)
+//   if (!to || !html) {
+//     return res.status(400).json({ error: "Recipient and HTML required" });
+//   }
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "onboarding@resend.dev",
-        to:"raphaelfaboyinde27@gmail.com",
-        subject: "📄 Your AI Invoice",
-        html,
-      }),
-    });
+//   try {
+//     const response = await fetch("https://api.resend.com/emails", {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         from: "onboarding@resend.dev",
+//         to,
+//         subject: "📄 Your AI Invoice",
+//         html,
+//       }),
+//     });
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("Resend error:", data);
-      return res.status(500).json({ error: "Failed to send email" });
-    }
+//     if (!response.ok) {
+//       console.error("Resend error:", data);
+//       return res.status(500).json({ error: "Failed to send email" });
+//     }
 
-    res.status(200).json({ success: true, message: "Email sent!" });
-  } catch (err) {
-    console.error("Email error:", err.message);
-    res.status(500).json({ error: "Failed to send email", details: err.message });
-  }
-};
+//     res.status(200).json({ success: true, message: "Email sent!" });
+//   } catch (err) {
+//     console.error("Email error:", err.message);
+//     res.status(500).json({ error: "Failed to send email", details: err.message });
+//   }
+// };
 
 
-module.exports = { generateInvoiceAI, refineInvoice, sendInvoiceEmail};
+module.exports = { generateInvoiceAI, refineInvoice};

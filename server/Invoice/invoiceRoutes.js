@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   generateInvoiceAI,
   refineInvoice,
-  sendInvoiceEmail,
+  // sendInvoiceEmail,
 } = require("./invoiceController");
 
 
@@ -14,7 +14,7 @@ router.post("/invoice-ai", generateInvoiceAI);
 router.post("/refine-invoice", refineInvoice);
 
 
-router.post("/send-invoice", sendInvoiceEmail);
+// router.post("/send-invoice", sendInvoiceEmail);
 
 
 module.exports = router;
