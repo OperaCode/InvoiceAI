@@ -111,7 +111,7 @@ const Home = () => {
         <textarea
           className="w-full px-4 py-3 rounded-md bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none mb-4"
           rows={5}
-          placeholder="Describe your job or task to generate an invoice."
+          placeholder="Enter prompt e.g Generate an invoice for Jane Doe for website design worth $800, due August 15."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
